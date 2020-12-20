@@ -1,5 +1,7 @@
 package com.showdo.coolweather.android;
 
+import com.showdo.coolweather.android.util.Utility;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -11,7 +13,8 @@ import static org.junit.Assert.*;
  */
 public class ExampleUnitTest {
     @Test
-    public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+    public void addition_isCorrect(){
+
     }
+
 }
