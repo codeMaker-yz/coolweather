@@ -1,6 +1,7 @@
 package com.showdo.coolweather.android;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import com.showdo.coolweather.android.db.City;
 import com.showdo.coolweather.android.db.County;
 import com.showdo.coolweather.android.db.Province;
+import com.showdo.coolweather.android.gson.Weather;
 import com.showdo.coolweather.android.util.HttpUtil;
 import com.showdo.coolweather.android.util.Utility;
 
@@ -112,6 +114,13 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
+                } else if(currentLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(position).getWeatherId();
+                    //Log.d(TAG, "onItemClick: " + weatherId);
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weatherId",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -179,8 +188,6 @@ public class ChooseAreaFragment extends Fragment {
         } else {
             int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
-            Log.d(TAG, "queryCounties: " + provinceCode);
-            Log.d(TAG, "queryCounties: " + cityCode);
             String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
             queryFromServer(address, "county");
         }
