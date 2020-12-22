@@ -5,6 +5,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.ActivityManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.showdo.coolweather.android.gson.Forecast;
 import com.showdo.coolweather.android.gson.Weather;
+import com.showdo.coolweather.android.service.AutoUpdateService;
 import com.showdo.coolweather.android.util.HttpUtil;
 import com.showdo.coolweather.android.util.Utility;
 
@@ -90,6 +93,12 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
+        String bingPic = prefs.getString("bing_pic",null);
+        if(bingPic != null){
+            Glide.with(this).load(bingPic).into(bingPicImg);
+        } else {
+            loadBingPic();
+        }
         if(weatherString != null){
             // 有缓存直接解析
             Weather weather = Utility.handleWeatherResponse(weatherString);
@@ -110,12 +119,13 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
-        String bingPic = prefs.getString("bing_pic",null);
-        if(bingPic != null){
-            Glide.with(this).load(bingPic).into(bingPicImg);
-        } else {
-            loadBingPic();
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo serviceInfo : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("com.showdo.coolweather.android.service.AutoUpdateService".equals(serviceInfo.service.getClassName())){
+                Log.d("ServiceActivity", "onCreate: " + "已经启动了！");
+            }
         }
+
     }
 
 
@@ -214,9 +224,9 @@ public class WeatherActivity extends AppCompatActivity {
             TextView infoText = view.findViewById(R.id.info_text);
             TextView maxText = view.findViewById(R.id.max_text);
             TextView minText = view.findViewById(R.id.min_text);
-            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.date);
-            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.more.info);
-            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.temperature.max);
+//            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.date);
+//            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.more.info);
+//            Log.d("WeatherActivity", "showWeatherInfo: " + forecast.temperature.max);
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
@@ -234,6 +244,9 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
 }
